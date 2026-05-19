@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pro Video Downloader</title>
     <style>
+        /* CSS Reset & Basic */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
+        /* App Layout - Pull to refresh enabled */
         body { 
             background-color: #0f0f12; 
             color: #fff; 
             display: flex; 
             flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
+            min-height: 100vh; /* Changed from height: 100vh to allow natural scrolling */
         }
         
+        /* Fixed (Sticky) Header */
         header { 
+            position: sticky; 
+            top: 0; 
             background-color: #17171c; 
             padding: 15px 20px; 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
             border-bottom: 1px solid #23232a; 
-            flex-shrink: 0; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 10; 
         }
@@ -31,6 +34,7 @@
         .logo span { font-size: 12px; background: #4f46e5; color: #fff; padding: 2px 6px; border-radius: 4px; }
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
 
+        /* Sidebar */
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background-color: #1c1c24; box-shadow: 2px 0 15px rgba(0,0,0,0.5); transition: 0.3s; z-index: 20; padding: 20px; display: flex; flex-direction: column; }
         .sidebar.open { left: 0; }
         .close-btn { align-self: flex-end; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
@@ -41,9 +45,9 @@
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 15; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
 
+        /* Main Content */
         main { 
-            flex-grow: 1; 
-            overflow-y: auto; 
+            flex: 1; 
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
@@ -58,7 +62,7 @@
             border-radius: 16px; 
             border: 1px solid #23232a;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            margin-top: 20px;
+            margin-top: 10px;
         }
         h2 { text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: 600; color: #f4f4f5; }
         
@@ -81,6 +85,7 @@
         .download-btn { display: none; width: 100%; padding: 10px; background: #10b981; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .download-btn:active { background: #059669; }
 
+        /* Footer */
         footer { 
             background: #17171c; 
             text-align: center; 
@@ -88,12 +93,8 @@
             border-top: 1px solid #23232a; 
             font-size: 12px; 
             color: #71717a; 
-            flex-shrink: 0; 
+            margin-top: auto; /* Pushes footer to the bottom naturally */
         }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0f12; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -153,7 +154,8 @@
         }
 
         function extractVideoId(url) {
-            const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/)|googleusercontent\.com\/youtube\.com\/)([a-zA-Z0-9_-]+)/i;
+            // हर प्रकार के YouTube Link से 11 कैरेक्टर वाली ID निकालेगा
+            const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/i;
             const match = url.match(regExp);
             return (match && match[1]) ? match[1] : null;
         }
@@ -167,8 +169,8 @@
             const videoId = extractVideoId(urlInput);
             if (!videoId) return alert("❌ कृपया सही YouTube लिंक डालें!");
 
-            // ⚠️ FIX: API को भेजने के लिए स्टैण्डर्ड YouTube लिंक का उपयोग किया गया है
-            // अब API इसे आसानी से समझ लेगा और Empty Response नहीं देगा।
+            // ⚠️ FIX: एकदम सही और स्टैंडर्ड YouTube URL फॉर्मेट। 
+            // अब API को बिलकुल भी दिक्कत नहीं होगी इसे समझने में।
             const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
             const resultBox = document.getElementById('resultBox');
@@ -216,7 +218,6 @@
                 const data = await response.json();
                 clearInterval(progInterval);
 
-                // API से मिलने वाले लिंक को चेक करना
                 let downloadLink = data.url || data.download_url || data.link;
 
                 if (!downloadLink && data.msg) {
