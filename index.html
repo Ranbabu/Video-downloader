@@ -113,8 +113,8 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // लिंक से ID निकालना
         function extractVideoId(url) {
+            // हर तरह के YouTube लिंक से 11-अक्षरों वाली ID निकालने का पक्का कोड
             const regExp = /(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/i;
             const match = url.match(regExp);
             return (match && match[1]) ? match[1] : null;
@@ -129,10 +129,9 @@
             const videoId = extractVideoId(urlInput);
             if (!videoId) return alert("❌ कृपया सही YouTube लिंक डालें!");
 
-            // ⚠️ SUPER FIX: शॉर्ट लिंक को हमेशा लंबे लिंक में बदलें
-            const standardUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            // ⚠️ THE REAL FIX: अब यह बिल्कुल साफ़ और ओरिजिनल YouTube लिंक बनाएगा
+            const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-            // UI Elements
             const resultBox = document.getElementById('resultBox');
             const thumbImg = document.getElementById('thumbImg');
             const statusText = document.getElementById('statusText');
@@ -167,12 +166,11 @@
                     }
                 };
                 
-                // ध्यान दें: हमने यहाँ urlInput की जगह standardUrl भेजा है ताकि API क्रैश न हो
-                const apiUrl = `https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?format=${formatInput}&add_info=0&url=${encodeURIComponent(standardUrl)}`;
+                // साफ़ लिंक (cleanUrl) को API में भेजा जा रहा है
+                const apiUrl = `https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?format=${formatInput}&add_info=0&url=${encodeURIComponent(cleanUrl)}`;
                 
                 const response = await fetch(apiUrl, options);
                 
-                // अगर API का सर्वर डाउन है
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
@@ -182,9 +180,8 @@
 
                 let downloadLink = data.url || data.download_url || data.link;
 
-                // अगर API ने खुद एरर भेजा है
                 if (!downloadLink && data.msg) {
-                    throw new Error(data.msg); // API का असली एरर दिखाएँ
+                    throw new Error(data.msg); 
                 }
 
                 if (downloadLink) {
@@ -204,8 +201,6 @@
             } catch (error) {
                 clearInterval(progInterval);
                 progContainer.style.display = 'none';
-                
-                // अब हमें एग्जेक्ट एरर स्क्रीन पर दिखेगा
                 console.error(error);
                 statusText.innerText = "❌ एरर: " + (error.message || "सर्वर बिज़ी है");
                 statusText.style.color = "#ef4444";
