@@ -5,51 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pro Video Downloader</title>
     <style>
+        /* CSS Reset & Basic */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f0f12; color: #fff; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
+        /* Header */
         header { background-color: #17171c; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #23232a; position: sticky; top: 0; z-index: 10; }
-        .logo { font-size: 20px; font-weight: bold; color: #4f46e5; }
+        .logo { font-size: 20px; font-weight: bold; color: #4f46e5; display: flex; align-items: center; gap: 8px;}
+        .logo span { font-size: 12px; background: #4f46e5; color: #fff; padding: 2px 6px; border-radius: 4px; }
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
 
+        /* Sidebar */
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background-color: #1c1c24; box-shadow: 2px 0 15px rgba(0,0,0,0.5); transition: 0.3s; z-index: 20; padding: 20px; display: flex; flex-direction: column; }
         .sidebar.open { left: 0; }
         .close-btn { align-self: flex-end; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
         .sidebar h3 { color: #4f46e5; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .sidebar label { font-size: 14px; color: #a1a1aa; margin-bottom: 8px; display: block; }
-        .sidebar input { width: 100%; padding: 12px; border-radius: 8px; background: #0f0f12; border: 1px solid #333; color: #fff; margin-bottom: 15px; }
-        .save-btn { padding: 12px; background: #4f46e5; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
+        /* Masked API Input */
+        .api-display { width: 100%; padding: 12px; border-radius: 8px; background: #0f0f12; border: 1px solid #10b981; color: #10b981; margin-bottom: 15px; font-family: monospace; font-size: 14px; outline: none; }
+        
+        /* Overlay */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 15; }
         .overlay.active { display: block; }
 
+        /* Main Content */
         main { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .app-card { width: 100%; max-width: 450px; background: #17171c; padding: 25px 20px; border-radius: 16px; border: 1px solid #23232a; }
         h2 { text-align: center; margin-bottom: 20px; font-size: 22px; }
         
         input[type="text"] { width: 100%; padding: 15px; background: #202027; border: 1px solid #2d2d39; border-radius: 10px; color: #fff; font-size: 15px; outline: none; margin-bottom: 15px; }
-        input[type="text"]:focus { border-color: #4f46e5; }
+        input[type="text"]:focus, select:focus { border-color: #4f46e5; }
         
+        /* Dropdown */
+        select { width: 100%; padding: 15px; background-color: #202027; border: 1px solid #2d2d39; border-radius: 10px; color: #fff; font-size: 15px; margin-bottom: 15px; outline: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; cursor: pointer; }
+
         .generate-btn { width: 100%; padding: 15px; background: #4f46e5; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .generate-btn:active { background: #3730a3; }
 
+        /* Result Box (Thumbnail + Progress) */
         .result-box { margin-top: 25px; background: #202027; padding: 15px; border-radius: 12px; display: none; align-items: center; gap: 15px; border: 1px solid #2d2d39; }
-        .thumbnail { width: 90px; height: 60px; border-radius: 8px; object-fit: cover; background: #000; }
+        .thumbnail { width: 90px; height: 60px; border-radius: 8px; object-fit: cover; background: #333; }
         .info-area { flex: 1; }
         .status-text { font-size: 13px; color: #a1a1aa; margin-bottom: 5px; font-weight: bold; }
         
+        /* Progress Bar */
         .progress-container { width: 100%; background: #333; border-radius: 5px; height: 8px; overflow: hidden; margin-bottom: 10px; display: none; }
         .progress-bar { height: 100%; width: 0%; background: #10b981; transition: 0.2s; }
         
         .download-btn { display: none; width: 100%; padding: 10px; background: #10b981; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; }
 
+        /* Footer */
         footer { background: #17171c; text-align: center; padding: 15px; border-top: 1px solid #23232a; font-size: 12px; color: #71717a; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Pro DL</div>
+        <div class="logo">Pro DL <span>PRO</span></div>
         <button class="menu-btn" onclick="toggleSidebar()">⚙️</button>
     </header>
 
@@ -57,16 +70,22 @@
     <div class="sidebar" id="sidebar">
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
-        <label for="apiKey">RapidAPI Key:</label>
-        <input type="text" id="apiKey" placeholder="यहाँ API Key पेस्ट करें...">
-        <button class="save-btn" onclick="saveApiKey()">सेव करें</button>
-        <p style="font-size: 12px; color: #a1a1aa; margin-top: 15px;">API Key सेव करने के बाद ऐप बेहतर काम करेगा।</p>
+        <label>API Key (Auto-Configured):</label>
+        <input type="text" class="api-display" value="********************************7ab3" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ आपकी API Key सर्वर के साथ सफलतापूर्वक जुड़ चुकी है। अब आपको इसे बदलने की ज़रूरत नहीं है।</p>
     </div>
 
     <main>
         <div class="app-card">
             <h2>लिंक पेस्ट करें</h2>
+            
             <input type="text" id="videoUrl" placeholder="YouTube वीडियो का लिंक...">
+            
+            <select id="formatSelect">
+                <option value="mp4">🎬 वीडियो (MP4 Quality)</option>
+                <option value="mp3">🎵 ऑडियो (MP3 Music)</option>
+            </select>
+
             <button class="generate-btn" onclick="processVideo()">प्रोसेस करें</button>
             
             <div class="result-box" id="resultBox">
@@ -76,7 +95,7 @@
                     <div class="progress-container" id="progContainer">
                         <div class="progress-bar" id="progBar"></div>
                     </div>
-                    <a href="#" target="_blank" class="download-btn" id="dlBtn">डाउनलोड करें</a>
+                    <a href="#" target="_blank" class="download-btn" id="dlBtn">📥 डाउनलोड करें</a>
                 </div>
             </div>
         </div>
@@ -87,43 +106,38 @@
     </footer>
 
     <script>
-        window.onload = () => {
-            const savedKey = localStorage.getItem('myApiKey');
-            if(savedKey) document.getElementById('apiKey').value = savedKey;
-        };
+        // आपकी हार्डकोड की गई API Key
+        const MY_API_KEY = "8f737c878amshdebf97eed7cc42dp1fbefajsn6b510d3a7ab3";
 
+        // साइडबार कंट्रोल
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function saveApiKey() {
-            const key = document.getElementById('apiKey').value.trim();
-            if(key) {
-                localStorage.setItem('myApiKey', key);
-                alert("API Key सफलतापूर्वक सेव हो गई!");
-                toggleSidebar();
-            } else {
-                alert("कृपया पहले API Key डालें।");
-            }
-        }
-
-        function getYouTubeId(url) {
-            const regExp = /^.*(http:\/\/googleusercontent\.com\/youtube\.com\/3\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        // लिंक से Video ID निकालना (Thumbnail के लिए)
+        function extractVideoId(url) {
+            // यह अब किसी भी तरह के लिंक को पास कर देगा
+            const regExp = /(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/i;
             const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            if (match && match[1]) {
+                return match[1];
+            }
+            return null; // अगर ID नहीं मिली तो भी डाउनलोड प्रोसेस होगा
         }
 
         async function processVideo() {
             const urlInput = document.getElementById('videoUrl').value.trim();
-            const apiKey = localStorage.getItem('myApiKey');
+            const formatInput = document.getElementById('formatSelect').value;
             
             if (!urlInput) return alert("कृपया लिंक डालें!");
-            if (!apiKey) return alert("कृपया पहले सेटिंग्स (⚙️) में जाकर अपनी API Key सेव करें!");
+            
+            // नया लिंक वैलिडेशन (अब यह ब्लॉक नहीं करेगा)
+            if (!urlInput.includes("youtu") && !urlInput.includes("googleusercontent")) {
+                return alert("कृपया सही YouTube लिंक डालें!");
+            }
 
-            const videoId = getYouTubeId(urlInput);
-            if(!videoId) return alert("कृपया सही YouTube लिंक डालें!");
-
+            // UI Elements
             const resultBox = document.getElementById('resultBox');
             const thumbImg = document.getElementById('thumbImg');
             const statusText = document.getElementById('statusText');
@@ -131,6 +145,7 @@
             const progBar = document.getElementById('progBar');
             const dlBtn = document.getElementById('dlBtn');
 
+            // UI रीसेट करें
             resultBox.style.display = 'flex';
             dlBtn.style.display = 'none';
             progContainer.style.display = 'block';
@@ -138,8 +153,16 @@
             statusText.innerText = "प्रोसेसिंग शुरू (0%)...";
             statusText.style.color = "#a1a1aa";
             
-            thumbImg.src = `https://img.youtube.com/vi/$${videoId}/default.jpg`;
+            // थंबनेल सेट करें
+            const videoId = extractVideoId(urlInput);
+            if(videoId) {
+                thumbImg.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            } else {
+                // अगर कोई अजीब लिंक है तो डिफ़ॉल्ट थंबनेल दिखाएं
+                thumbImg.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60' viewBox='0 0 90 60'><rect width='90' height='60' fill='%23333'/><text x='45' y='35' font-family='Arial' font-size='12' fill='%23888' text-anchor='middle'>VIDEO</text></svg>`;
+            }
 
+            // प्रोग्रेस बार एनीमेशन
             let progress = 0;
             const progInterval = setInterval(() => {
                 progress += Math.floor(Math.random() * 15) + 5; 
@@ -148,24 +171,24 @@
                 statusText.innerText = `वीडियो निकाला जा रहा है (${progress}%)...`;
             }, 500);
 
+            // API Call
             try {
-                // आपकी नई API के हिसाब से डिटेल्स
                 const options = {
                     method: 'GET',
                     headers: {
-                        'x-rapidapi-key': apiKey,
+                        'x-rapidapi-key': MY_API_KEY,
                         'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com'
                     }
                 };
                 
-                const apiUrl = `https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?format=mp4&add_info=0&url=${encodeURIComponent(urlInput)}`;
+                // URL के साथ Format (mp4 या mp3) भेजा जा रहा है
+                const apiUrl = `https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?format=${formatInput}&add_info=0&url=${encodeURIComponent(urlInput)}`;
                 
                 const response = await fetch(apiUrl, options);
                 const data = await response.json();
 
                 clearInterval(progInterval);
 
-                // API से डाउनलोड लिंक खोजना
                 let downloadLink = data.url || data.download_url || data.link;
 
                 if (downloadLink) {
@@ -178,18 +201,14 @@
                         dlBtn.href = downloadLink;
                         dlBtn.style.display = 'block';
                     }, 500);
-                } else if (data.id) {
-                    // कुछ API डायरेक्ट लिंक नहीं देतीं
-                    statusText.innerText = "❌ यह API डायरेक्ट लिंक नहीं दे रही। कृपया RapidAPI से 'YouTube Search and Download' वाली API चुनें।";
-                    statusText.style.color = "#ef4444";
                 } else {
-                    throw new Error("लिंक नहीं मिला");
+                    throw new Error("लिंक नहीं मिला या सर्वर बिजी है।");
                 }
 
             } catch (error) {
                 clearInterval(progInterval);
                 progContainer.style.display = 'none';
-                statusText.innerText = "❌ API Error / Key गलत है";
+                statusText.innerText = "❌ डाउनलोड फेल! लिंक जांचें।";
                 statusText.style.color = "#ef4444";
             }
         }
