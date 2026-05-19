@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Video Downloader</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0f0f12;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #17171c;
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            text-align: center;
+            border: 1px solid #23232a;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 24px;
+            color: #4f46e5;
+        }
+        p.subtitle {
+            color: #71717a;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 16px;
+            background-color: #202027;
+            border: 1px solid #2d2d39;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+        select {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: #4f46e5;
+            background-color: #24242c;
+        }
+        button.generate-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #4f46e5;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button.generate-btn:active {
+            background-color: #3730a3;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #a1a1aa;
+            display: none;
+            padding: 12px;
+            background-color: #1e1e24;
+            border-radius: 8px;
+            border: 1px solid #2d2d39;
+        }
+        .result-area {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background-color: #10b981;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            box-sizing: border-box;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transition: 0.3s;
+        }
+        .download-btn:active {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>प्रो वीडियो डाउनलोडर</h2>
+        <p class="subtitle">Fast & Secure (GitHub Pages Version)</p>
+        
+        <div class="input-group">
+            <input type="text" id="videoUrl" placeholder="यहाँ वीडियो लिंक पेस्ट करें...">
+        </div>
+
+        <div class="input-group">
+            <select id="formatSelect">
+                <option value="1080">MP4 Video (1080p - Full HD)</option>
+                <option value="720">MP4 Video (720p - HD)</option>
+                <option value="360">MP4 Video (360p - Normal)</option>
+                <option value="mp3">MP3 Audio (सिर्फ गाना/म्यूजिक)</option>
+            </select>
+        </div>
+        
+        <button class="generate-btn" onclick="startDownload()">डाउनलोड लिंक बनाएं</button>
+        
+        <div class="status" id="statusMessage"></div>
+        
+        <div class="result-area" id="resultArea"></div>
+    </div>
+
+    <script>
+        async function startDownload() {
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            const format = document.getElementById('formatSelect').value;
+            const statusMsg = document.getElementById('statusMessage');
+            const resultArea = document.getElementById('resultArea');
+
+            if (!urlInput) {
+                alert("कृपया पहले वीडियो का लिंक डालें!");
+                return;
+            }
+
+            statusMsg.style.display = 'block';
+            statusMsg.innerText = "⚡ सुरक्षित लिंक तैयार किया जा रहा है...";
+            statusMsg.style.color = "#a1a1aa";
+            resultArea.innerHTML = '';
+
+            // Cobalt API के लिए डेटा तैयार करना
+            let requestBody = {
+                url: urlInput,
+                filenamePattern: 'classic'
+            };
+
+            // अगर यूज़र ने MP3 चुना है, तो ऑडियो मोड ऑन करें, वरना क्वालिटी सेट करें
+            if (format === 'mp3') {
+                requestBody.isAudioOnly = true;
+            } else {
+                requestBody.videoQuality = format;
+            }
+
+            try {
+                // सीधे Cobalt API को रिक्वेस्ट (बिना किसी प्रॉक्सी के)
+                const response = await fetch('https://api.cobalt.tools/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                // अगर डाउनलोड लिंक मिल गया
+                if (data.url) {
+                    statusMsg.style.display = 'none';
+                    resultArea.innerHTML = `
+                        <a href="${data.url}" target="_blank" download class="download-btn">
+                            📥 फ़ाइल डाउनलोड करें
+                        </a>
+                    `;
+                } else {
+                    throw new Error("लिंक सपोर्टेड नहीं है या सर्वर बिज़ी है।");
+                }
+            } catch (error) {
+                statusMsg.innerText = "❌ त्रुटि: कृपया चेक करें कि लिंक सही है या नहीं।";
+                statusMsg.style.color = "#ef4444";
+                console.error(error);
+            }
+        }
+    </script>
+
+</body>
+</html>
