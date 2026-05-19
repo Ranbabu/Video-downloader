@@ -103,8 +103,8 @@
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
         <label>API Provider:</label>
-        <input type="text" class="api-display" value="Cobalt + Multi-Server" readonly>
-        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब मल्टी-सर्वर टेक्नोलॉजी पर चल रहा है। एक ब्लॉक हुआ तो दूसरा काम करेगा।</p>
+        <input type="text" class="api-display" value="Cobalt + CORS Proxy" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब प्रॉक्सी सपोर्ट के साथ चल रहा है जिससे GitHub.io पर कोई CORS Error नहीं आएगा।</p>
     </div>
 
     <main>
@@ -136,7 +136,7 @@
     </main>
 
     <footer>
-        © 2026 Social Video Downloader | Powered by Multi-Servers
+        © 2026 Social Video Downloader | Powered by Secure Proxy
     </footer>
 
     <script>
@@ -157,19 +157,14 @@
             const progBar = document.getElementById('progBar');
             const dlBtn = document.getElementById('dlBtn');
 
-            // 1. लिंक को फिक्स करना (ताकि googleusercontent जैसे लिंक API में फेल न हों)
-            let finalUrl = urlInput;
-            const ytRegex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/)|googleusercontent\.com\/youtube\.com\/)([a-zA-Z0-9_-]{11})/i;
-            const match = urlInput.match(ytRegex);
-            if (match && match[1]) {
-                finalUrl = "https://www.youtube.com/watch?v=" + match[1]; // यह API के लिए परफेक्ट लिंक बना देगा
-            }
+            // हम लिंक को बिना बदले सीधा API को भेजेंगे
+            const finalUrl = urlInput; 
 
             resultBox.style.display = 'flex';
             dlBtn.style.display = 'none';
             progContainer.style.display = 'block';
             progBar.style.width = '0%';
-            statusText.innerText = "सर्वर से कनेक्ट हो रहा है (0%)...";
+            statusText.innerText = "प्रॉक्सी सर्वर से कनेक्ट हो रहा है (0%)...";
             statusText.style.color = "#a1a1aa";
 
             let progress = 0;
@@ -190,62 +185,52 @@
                 aFormat: "mp3"
             };
 
-            // 2. मल्टी-सर्वर बैकअप (Multi-Server Fallback)
-            // अगर एक "Failed to fetch" देता है, तो कोड अपने आप दूसरे सर्वर का इस्तेमाल करेगा।
-            const apis = [
-                "https://co.wuk.sh/api/json",                     // Server 1
-                "https://api.cobalt.tools/api/json",              // Server 2 (Official)
-                "https://cobalt.q0.o.aurora.tech/api/json"        // Server 3
-            ];
+            try {
+                // CORS Error को फिक्स करने के लिए CORS Proxy का इस्तेमाल
+                const proxyUrl = "https://corsproxy.io/?";
+                const targetApi = "https://api.cobalt.tools/api/json";
+                const fetchUrl = proxyUrl + encodeURIComponent(targetApi);
 
-            let success = false;
-            let downloadLink = null;
-            let errorMsg = "डाउनलोड लिंक जनरेट नहीं हो पाया।";
+                const response = await fetch(fetchUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
 
-            for (let api of apis) {
-                try {
-                    statusText.innerText = `सर्वर चेक किया जा रहा है...`;
-                    const response = await fetch(api, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
+                clearInterval(progInterval);
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.status !== 'error' && data.url) {
-                            success = true;
-                            downloadLink = data.url;
-                            break; // जैसे ही लिंक मिला, लूप रोक दो
-                        } else if (data.text) {
-                            errorMsg = data.text;
-                        }
-                    }
-                } catch (e) {
-                    console.log(`Failed connecting to ${api}, trying next...`);
-                    // अगले सर्वर पर जायेगा
+                if (!response.ok) {
+                    throw new Error("सर्वर से कोई जवाब नहीं मिला।");
                 }
-            }
 
-            clearInterval(progInterval);
+                const data = await response.json();
 
-            // फाइनल आउटपुट
-            if (success && downloadLink) {
-                progBar.style.width = '100%';
-                statusText.innerText = "✅ वीडियो तैयार है! (100%)";
-                statusText.style.color = "#10b981";
-                
-                setTimeout(() => {
-                    progContainer.style.display = 'none';
-                    dlBtn.href = downloadLink;
-                    dlBtn.style.display = 'block';
-                }, 500);
-            } else {
+                if (data.status === 'error' || data.text) {
+                    throw new Error(data.text || "लिंक प्राइवेट है या सपोर्ट नहीं करता।");
+                }
+
+                if (data.url) {
+                    progBar.style.width = '100%';
+                    statusText.innerText = "✅ वीडियो तैयार है! (100%)";
+                    statusText.style.color = "#10b981";
+                    
+                    setTimeout(() => {
+                        progContainer.style.display = 'none';
+                        dlBtn.href = data.url;
+                        dlBtn.style.display = 'block';
+                    }, 500);
+                } else {
+                    throw new Error("डाउनलोड लिंक जनरेट नहीं हो पाया।");
+                }
+
+            } catch (error) {
+                clearInterval(progInterval);
                 progContainer.style.display = 'none';
-                statusText.innerText = "❌ एरर: " + errorMsg + " (CORS Error)";
+                console.error(error);
+                statusText.innerText = "❌ एरर: " + error.message;
                 statusText.style.color = "#ef4444";
             }
         }
