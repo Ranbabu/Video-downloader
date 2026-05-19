@@ -62,7 +62,7 @@
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
         <label>API Provider:</label>
-        <input type="text" class="api-display" value="My Custom Vercel Server" readonly>
+        <input type="text" class="api-display" value="My Private Vercel Server" readonly>
         <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब आपके खुद के प्राइवेट Vercel सर्वर पर चल रहा है। कोई एरर नहीं आएगा।</p>
     </div>
 
@@ -104,8 +104,6 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // ⚠️ यहाँ अपना Vercel URL डालें (जैसे: https://your-project.vercel.app/api/download)
-        // अगर आपने इसे उसी github repo में डाला है, तो सिर्फ '/api/download' भी काम करेगा!
         const MY_VERCEL_API = "/api/download"; 
 
         async function processVideo() {
@@ -139,7 +137,6 @@
             const quality = isAudio ? '720' : formatInput;
             
             try {
-                // अब आपका ब्राउज़र सीधे आपके Vercel सर्वर से बात करेगा
                 const response = await fetch(MY_VERCEL_API, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -153,15 +150,16 @@
                 clearInterval(progInterval);
 
                 if (!response.ok) {
-                    throw new Error("आपके सर्वर से जवाब नहीं आया।");
+                    throw new Error("आपके सर्वर से सही जवाब नहीं मिला।");
                 }
 
                 const data = await response.json();
 
                 if (data.status === 'error' || data.text) {
-                    throw new Error(data.text || "लिंक प्राइवेट है या सपोर्ट नहीं करता।");
+                    throw new Error(data.text || "लिंक प्राइवेट है या सर्वर ओवरलोड है।");
                 }
 
+                // ⚠️ Cobalt की नई API 'url' या 'picker' रिस्पांस देती है
                 if (data.url) {
                     progBar.style.width = '100%';
                     statusText.innerText = "✅ वीडियो तैयार है! (100%)";
