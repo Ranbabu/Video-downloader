@@ -6,27 +6,9 @@
     <title>All-in-One Video Downloader</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f0f12; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
         
-        body { 
-            background-color: #0f0f12; 
-            color: #fff; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-        }
-        
-        header { 
-            position: sticky; 
-            top: 0; 
-            background-color: #17171c; 
-            padding: 15px 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            border-bottom: 1px solid #23232a; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10; 
-        }
+        header { position: sticky; top: 0; background-color: #17171c; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #23232a; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10; }
         .logo { font-size: 20px; font-weight: bold; color: #10b981; display: flex; align-items: center; gap: 8px;}
         .logo span { font-size: 12px; background: #10b981; color: #fff; padding: 2px 6px; border-radius: 4px; }
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
@@ -41,24 +23,9 @@
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 15; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
 
-        main { 
-            flex: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        main { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        .app-card { 
-            width: 100%; 
-            max-width: 450px; 
-            background: #17171c; 
-            padding: 25px 20px; 
-            border-radius: 16px; 
-            border: 1px solid #23232a;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            margin-top: 10px;
-        }
+        .app-card { width: 100%; max-width: 450px; background: #17171c; padding: 25px 20px; border-radius: 16px; border: 1px solid #23232a; box-shadow: 0 8px 24px rgba(0,0,0,0.2); margin-top: 10px; }
         h2 { text-align: center; margin-bottom: 10px; font-size: 20px; font-weight: 600; color: #f4f4f5; }
         .subtitle { text-align: center; font-size: 12px; color: #a1a1aa; margin-bottom: 20px; }
 
@@ -80,15 +47,7 @@
         .download-btn { display: none; width: 100%; padding: 12px; background: #4f46e5; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; transition: 0.2s; }
         .download-btn:active { background: #3730a3; }
 
-        footer { 
-            background: #17171c; 
-            text-align: center; 
-            padding: 15px; 
-            border-top: 1px solid #23232a; 
-            font-size: 12px; 
-            color: #71717a; 
-            margin-top: auto; 
-        }
+        footer { background: #17171c; text-align: center; padding: 15px; border-top: 1px solid #23232a; font-size: 12px; color: #71717a; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -103,8 +62,8 @@
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
         <label>API Provider:</label>
-        <input type="text" class="api-display" value="Cobalt + CORS Proxy" readonly>
-        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब प्रॉक्सी सपोर्ट के साथ चल रहा है जिससे GitHub.io पर कोई CORS Error नहीं आएगा।</p>
+        <input type="text" class="api-display" value="My Custom Vercel Server" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब आपके खुद के प्राइवेट Vercel सर्वर पर चल रहा है। कोई एरर नहीं आएगा।</p>
     </div>
 
     <main>
@@ -136,7 +95,7 @@
     </main>
 
     <footer>
-        © 2026 Social Video Downloader | Powered by Secure Proxy
+        © 2026 Social Video Downloader | Powered by Custom Vercel Backend
     </footer>
 
     <script>
@@ -144,6 +103,10 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
         }
+
+        // ⚠️ यहाँ अपना Vercel URL डालें (जैसे: https://your-project.vercel.app/api/download)
+        // अगर आपने इसे उसी github repo में डाला है, तो सिर्फ '/api/download' भी काम करेगा!
+        const MY_VERCEL_API = "/api/download"; 
 
         async function processVideo() {
             const urlInput = document.getElementById('videoUrl').value.trim();
@@ -157,14 +120,11 @@
             const progBar = document.getElementById('progBar');
             const dlBtn = document.getElementById('dlBtn');
 
-            // हम लिंक को बिना बदले सीधा API को भेजेंगे
-            const finalUrl = urlInput; 
-
             resultBox.style.display = 'flex';
             dlBtn.style.display = 'none';
             progContainer.style.display = 'block';
             progBar.style.width = '0%';
-            statusText.innerText = "प्रॉक्सी सर्वर से कनेक्ट हो रहा है (0%)...";
+            statusText.innerText = "सर्वर से कनेक्ट हो रहा है (0%)...";
             statusText.style.color = "#a1a1aa";
 
             let progress = 0;
@@ -178,32 +138,22 @@
             const isAudio = formatInput === 'mp3';
             const quality = isAudio ? '720' : formatInput;
             
-            const requestBody = {
-                url: finalUrl,
-                vQuality: quality,
-                isAudioOnly: isAudio,
-                aFormat: "mp3"
-            };
-
             try {
-                // CORS Error को फिक्स करने के लिए CORS Proxy का इस्तेमाल
-                const proxyUrl = "https://corsproxy.io/?";
-                const targetApi = "https://api.cobalt.tools/api/json";
-                const fetchUrl = proxyUrl + encodeURIComponent(targetApi);
-
-                const response = await fetch(fetchUrl, {
+                // अब आपका ब्राउज़र सीधे आपके Vercel सर्वर से बात करेगा
+                const response = await fetch(MY_VERCEL_API, {
                     method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: urlInput,
+                        vQuality: quality,
+                        isAudioOnly: isAudio
+                    })
                 });
 
                 clearInterval(progInterval);
 
                 if (!response.ok) {
-                    throw new Error("सर्वर से कोई जवाब नहीं मिला।");
+                    throw new Error("आपके सर्वर से जवाब नहीं आया।");
                 }
 
                 const data = await response.json();
