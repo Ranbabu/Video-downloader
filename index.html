@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Video Downloader</title>
+    <title>All-in-One Video Downloader</title>
     <style>
-        /* CSS Reset & Basic */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* App Layout - Pull to refresh enabled */
         body { 
             background-color: #0f0f12; 
             color: #fff; 
             display: flex; 
             flex-direction: column; 
-            min-height: 100vh; /* Changed from height: 100vh to allow natural scrolling */
+            min-height: 100vh; 
         }
         
-        /* Fixed (Sticky) Header */
         header { 
             position: sticky; 
             top: 0; 
@@ -30,22 +27,20 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 10; 
         }
-        .logo { font-size: 20px; font-weight: bold; color: #4f46e5; display: flex; align-items: center; gap: 8px;}
-        .logo span { font-size: 12px; background: #4f46e5; color: #fff; padding: 2px 6px; border-radius: 4px; }
+        .logo { font-size: 20px; font-weight: bold; color: #10b981; display: flex; align-items: center; gap: 8px;}
+        .logo span { font-size: 12px; background: #10b981; color: #fff; padding: 2px 6px; border-radius: 4px; }
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
 
-        /* Sidebar */
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background-color: #1c1c24; box-shadow: 2px 0 15px rgba(0,0,0,0.5); transition: 0.3s; z-index: 20; padding: 20px; display: flex; flex-direction: column; }
         .sidebar.open { left: 0; }
         .close-btn { align-self: flex-end; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-        .sidebar h3 { color: #4f46e5; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .sidebar h3 { color: #10b981; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .sidebar label { font-size: 14px; color: #a1a1aa; margin-bottom: 8px; display: block; }
-        .api-display { width: 100%; padding: 12px; border-radius: 8px; background: #0f0f12; border: 1px solid #10b981; color: #10b981; margin-bottom: 15px; font-family: monospace; font-size: 14px; outline: none; }
+        .api-display { width: 100%; padding: 12px; border-radius: 8px; background: #0f0f12; border: 1px solid #4f46e5; color: #4f46e5; margin-bottom: 15px; font-family: monospace; font-size: 14px; outline: none; }
         
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 15; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
 
-        /* Main Content */
         main { 
             flex: 1; 
             padding: 20px; 
@@ -64,28 +59,27 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             margin-top: 10px;
         }
-        h2 { text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: 600; color: #f4f4f5; }
-        
+        h2 { text-align: center; margin-bottom: 10px; font-size: 20px; font-weight: 600; color: #f4f4f5; }
+        .subtitle { text-align: center; font-size: 12px; color: #a1a1aa; margin-bottom: 20px; }
+
         input[type="text"] { width: 100%; padding: 15px; background: #202027; border: 1px solid #2d2d39; border-radius: 10px; color: #fff; font-size: 15px; outline: none; margin-bottom: 15px; transition: 0.3s; }
-        input[type="text"]:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        input[type="text"]:focus, select:focus { border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
         
         select { width: 100%; padding: 15px; background-color: #202027; border: 1px solid #2d2d39; border-radius: 10px; color: #fff; font-size: 15px; margin-bottom: 15px; outline: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; cursor: pointer; transition: 0.3s; }
 
-        .generate-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .generate-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
         .generate-btn:active { transform: scale(0.98); }
 
-        .result-box { margin-top: 25px; background: #202027; padding: 15px; border-radius: 12px; display: none; align-items: center; gap: 15px; border: 1px solid #2d2d39; }
-        .thumbnail { width: 90px; height: 60px; border-radius: 8px; object-fit: cover; background: #333; }
-        .info-area { flex: 1; }
-        .status-text { font-size: 13px; color: #a1a1aa; margin-bottom: 5px; font-weight: bold; }
+        .result-box { margin-top: 25px; background: #202027; padding: 15px; border-radius: 12px; display: none; align-items: center; gap: 15px; border: 1px solid #2d2d39; flex-direction: column; }
+        .info-area { width: 100%; }
+        .status-text { font-size: 13px; color: #a1a1aa; margin-bottom: 8px; font-weight: bold; text-align: center;}
         
         .progress-container { width: 100%; background: #333; border-radius: 5px; height: 8px; overflow: hidden; margin-bottom: 10px; display: none; }
-        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #34d399); transition: 0.2s; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #8b5cf6); transition: 0.2s; }
         
-        .download-btn { display: none; width: 100%; padding: 10px; background: #10b981; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        .download-btn:active { background: #059669; }
+        .download-btn { display: none; width: 100%; padding: 12px; background: #4f46e5; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .download-btn:active { background: #3730a3; }
 
-        /* Footer */
         footer { 
             background: #17171c; 
             text-align: center; 
@@ -93,14 +87,14 @@
             border-top: 1px solid #23232a; 
             font-size: 12px; 
             color: #71717a; 
-            margin-top: auto; /* Pushes footer to the bottom naturally */
+            margin-top: auto; 
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Pro DL <span>PRO</span></div>
+        <div class="logo">Social DL <span>PRO</span></div>
         <button class="menu-btn" onclick="toggleSidebar()">⚙️</button>
     </header>
 
@@ -108,30 +102,30 @@
     <div class="sidebar" id="sidebar">
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
-        <label>API Key (Auto-Configured):</label>
-        <input type="text" class="api-display" value="********************************7ab3" readonly>
-        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ आपकी API Key सर्वर के साथ सफलतापूर्वक जुड़ चुकी है।</p>
+        <label>API Provider:</label>
+        <input type="text" class="api-display" value="Cobalt (Open Source)" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब 100% फ्री और ओपन सोर्स API पर चल रहा है। किसी API Key की जरूरत नहीं है।</p>
     </div>
 
     <main>
         <div class="app-card">
             <h2>लिंक पेस्ट करें</h2>
+            <p class="subtitle">YouTube, Instagram, FB, TikTok, X (Twitter) सपोर्टेड</p>
             
-            <input type="text" id="videoUrl" placeholder="YouTube वीडियो का लिंक...">
+            <input type="text" id="videoUrl" placeholder="किसी भी वीडियो का लिंक डालें...">
             
             <select id="formatSelect">
                 <option value="1080">🎬 वीडियो (1080p - High Quality)</option>
                 <option value="720">🎬 वीडियो (720p - Medium Quality)</option>
-                <option value="360">🎬 वीडियो (360p - Normal Data Saver)</option>
+                <option value="480">🎬 वीडियो (480p - Normal Data Saver)</option>
                 <option value="mp3">🎵 ऑडियो (सिर्फ गाना MP3)</option>
             </select>
 
-            <button class="generate-btn" onclick="processVideo()">प्रोसेस करें</button>
+            <button class="generate-btn" onclick="processVideo()">डाउनलोड लिंक निकालें</button>
             
             <div class="result-box" id="resultBox">
-                <img src="" alt="Thumb" class="thumbnail" id="thumbImg">
                 <div class="info-area">
-                    <div class="status-text" id="statusText">तैयार हो रहा है...</div>
+                    <div class="status-text" id="statusText">लिंक चेक किया जा रहा है...</div>
                     <div class="progress-container" id="progContainer">
                         <div class="progress-bar" id="progBar"></div>
                     </div>
@@ -142,107 +136,96 @@
     </main>
 
     <footer>
-        © 2026 Pro Video Downloader | Made for Personal Use
+        © 2026 Social Video Downloader | Powered by Open Source
     </footer>
 
     <script>
-        const MY_API_KEY = "8f737c878amshdebf97eed7cc42dp1fbefajsn6b510d3a7ab3";
-
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function extractVideoId(url) {
-            // हर प्रकार के YouTube Link से 11 कैरेक्टर वाली ID निकालेगा
-            const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/i;
-            const match = url.match(regExp);
-            return (match && match[1]) ? match[1] : null;
         }
 
         async function processVideo() {
             const urlInput = document.getElementById('videoUrl').value.trim();
             const formatInput = document.getElementById('formatSelect').value;
             
-            if (!urlInput) return alert("कृपया लिंक डालें!");
-            
-            const videoId = extractVideoId(urlInput);
-            if (!videoId) return alert("❌ कृपया सही YouTube लिंक डालें!");
-
-            // ⚠️ FIX: एकदम सही और स्टैंडर्ड YouTube URL फॉर्मेट। 
-            // अब API को बिलकुल भी दिक्कत नहीं होगी इसे समझने में।
-            const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            if (!urlInput) return alert("❌ कृपया किसी वीडियो का लिंक डालें!");
 
             const resultBox = document.getElementById('resultBox');
-            const thumbImg = document.getElementById('thumbImg');
             const statusText = document.getElementById('statusText');
             const progContainer = document.getElementById('progContainer');
             const progBar = document.getElementById('progBar');
             const dlBtn = document.getElementById('dlBtn');
 
+            // UI Reset
             resultBox.style.display = 'flex';
             dlBtn.style.display = 'none';
             progContainer.style.display = 'block';
             progBar.style.width = '0%';
-            statusText.innerText = "प्रोसेसिंग शुरू (0%)...";
+            statusText.innerText = "सर्वर से कनेक्ट हो रहा है (0%)...";
             statusText.style.color = "#a1a1aa";
-            
-            thumbImg.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
             let progress = 0;
             const progInterval = setInterval(() => {
-                progress += Math.floor(Math.random() * 12) + 5; 
+                progress += Math.floor(Math.random() * 15) + 5; 
                 if(progress > 90) progress = 90; 
                 progBar.style.width = progress + '%';
-                statusText.innerText = `वीडियो निकाला जा रहा है (${progress}%)...`;
-            }, 500);
+                statusText.innerText = `वीडियो प्रोसेस हो रहा है (${progress}%)...`;
+            }, 600);
 
             try {
+                // दुनिया की सबसे पावरफुल ओपन सोर्स मीडिया API (Cobalt) का इस्तेमाल
+                const apiUrl = "https://api.cobalt.tools/api/json"; 
+                
+                const isAudio = formatInput === 'mp3';
+                const quality = isAudio ? '720' : formatInput; // MP3 के लिए क्वालिटी इग्नोर होती है
+                
+                const requestBody = {
+                    url: urlInput,
+                    vQuality: quality,
+                    isAudioOnly: isAudio,
+                    aFormat: "mp3" // अगर ऑडियो है तो mp3 में दे
+                };
+
                 const options = {
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'x-rapidapi-key': MY_API_KEY,
-                        'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com'
-                    }
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
                 };
                 
-                const apiUrl = `https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?format=${formatInput}&add_info=0&url=${encodeURIComponent(cleanUrl)}`;
-                
                 const response = await fetch(apiUrl, options);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
-                
                 const data = await response.json();
+                
                 clearInterval(progInterval);
 
-                let downloadLink = data.url || data.download_url || data.link;
-
-                if (!downloadLink && data.msg) {
-                    throw new Error(data.msg); 
+                // Cobalt API "error" स्टेटस भेजती है अगर लिंक गलत हो 
+                if (data.status === 'error') {
+                    throw new Error(data.text || "वीडियो नहीं मिला या लिंक प्राइवेट है।");
                 }
 
-                if (downloadLink) {
+                // Cobalt API सीधे 'url' पैरामीटर में डाउनलोड लिंक देती है
+                if (data.url) {
                     progBar.style.width = '100%';
-                    statusText.innerText = "✅ तैयार! (100%)";
+                    statusText.innerText = "✅ वीडियो तैयार है! (100%)";
                     statusText.style.color = "#10b981";
                     
                     setTimeout(() => {
                         progContainer.style.display = 'none';
-                        dlBtn.href = downloadLink;
+                        dlBtn.href = data.url;
                         dlBtn.style.display = 'block';
                     }, 500);
                 } else {
-                    throw new Error("लिंक नहीं मिला (API Response Empty)");
+                    throw new Error("डाउनलोड लिंक जनरेट नहीं हो पाया।");
                 }
 
             } catch (error) {
                 clearInterval(progInterval);
                 progContainer.style.display = 'none';
                 console.error(error);
-                statusText.innerText = "❌ एरर: " + (error.message || "सर्वर बिज़ी है");
+                statusText.innerText = "❌ एरर: " + error.message;
                 statusText.style.color = "#ef4444";
             }
         }
