@@ -83,7 +83,7 @@
         .status {
             margin-top: 20px;
             font-size: 14px;
-            color: #a1a1aa;
+            color: #10b981;
             display: none;
             padding: 12px;
             background-color: #1e1e24;
@@ -94,30 +94,13 @@
             margin-top: 20px;
             width: 100%;
         }
-        .download-btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background-color: #10b981;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: bold;
-            box-sizing: border-box;
-            font-size: 16px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-            transition: 0.3s;
-        }
-        .download-btn:active {
-            background-color: #059669;
-        }
     </style>
 </head>
 <body>
 
     <div class="app-container">
         <h2>प्रो वीडियो डाउनलोडर</h2>
-        <p class="subtitle">Fast & Secure (GitHub Pages Version)</p>
+        <p class="subtitle">हमेशा काम करने वाला (GitHub Pages)</p>
         
         <div class="input-group">
             <input type="text" id="videoUrl" placeholder="यहाँ वीडियो लिंक पेस्ट करें...">
@@ -132,7 +115,7 @@
             </select>
         </div>
         
-        <button class="generate-btn" onclick="startDownload()">डाउनलोड लिंक बनाएं</button>
+        <button class="generate-btn" onclick="generateDownloadButton()">डाउनलोड लिंक बनाएं</button>
         
         <div class="status" id="statusMessage"></div>
         
@@ -140,7 +123,7 @@
     </div>
 
     <script>
-        async function startDownload() {
+        function generateDownloadButton() {
             const urlInput = document.getElementById('videoUrl').value.trim();
             const format = document.getElementById('formatSelect').value;
             const statusMsg = document.getElementById('statusMessage');
@@ -151,53 +134,22 @@
                 return;
             }
 
+            // लोडिंग मैसेज दिखाएं
             statusMsg.style.display = 'block';
-            statusMsg.innerText = "⚡ सुरक्षित लिंक तैयार किया जा रहा है...";
-            statusMsg.style.color = "#a1a1aa";
-            resultArea.innerHTML = '';
-
-            // Cobalt API के लिए डेटा तैयार करना
-            let requestBody = {
-                url: urlInput,
-                filenamePattern: 'classic'
-            };
-
-            // अगर यूज़र ने MP3 चुना है, तो ऑडियो मोड ऑन करें, वरना क्वालिटी सेट करें
-            if (format === 'mp3') {
-                requestBody.isAudioOnly = true;
-            } else {
-                requestBody.videoQuality = format;
-            }
-
-            try {
-                // सीधे Cobalt API को रिक्वेस्ट (बिना किसी प्रॉक्सी के)
-                const response = await fetch('https://api.cobalt.tools/api/json', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                const data = await response.json();
-
-                // अगर डाउनलोड लिंक मिल गया
-                if (data.url) {
-                    statusMsg.style.display = 'none';
-                    resultArea.innerHTML = `
-                        <a href="${data.url}" target="_blank" download class="download-btn">
-                            📥 फ़ाइल डाउनलोड करें
-                        </a>
-                    `;
-                } else {
-                    throw new Error("लिंक सपोर्टेड नहीं है या सर्वर बिज़ी है।");
-                }
-            } catch (error) {
-                statusMsg.innerText = "❌ त्रुटि: कृपया चेक करें कि लिंक सही है या नहीं।";
-                statusMsg.style.color = "#ef4444";
-                console.error(error);
-            }
+            statusMsg.innerText = "✅ आपका डाउनलोड बटन नीचे तैयार है!";
+            
+            // Iframe Widget API का इस्तेमाल (इसमें CORS की कोई ज़रूरत नहीं होती)
+            // यह यूज़र द्वारा सिलेक्ट की गई क्वालिटी (format) के हिसाब से बटन जनरेट करेगा
+            resultArea.innerHTML = `
+                <iframe 
+                    style="width: 100%; height: 65px; border: 0; overflow: hidden; border-radius: 10px; background: transparent;" 
+                    scrolling="no" 
+                    src="https://loader.to/api/button/?url=${encodeURIComponent(urlInput)}&f=${format}">
+                </iframe>
+                <p style="font-size: 13px; color: #a1a1aa; margin-top: 15px;">
+                   (ऊपर दिखने वाले नीले <b>Download</b> बटन पर क्लिक करें)
+                </p>
+            `;
         }
     </script>
 
