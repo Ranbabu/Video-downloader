@@ -103,8 +103,8 @@
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
         <label>API Provider:</label>
-        <input type="text" class="api-display" value="Cobalt (Open Source)" readonly>
-        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब 100% फ्री और ओपन सोर्स API पर चल रहा है। किसी API Key की जरूरत नहीं है।</p>
+        <input type="text" class="api-display" value="Cobalt + Multi-Server" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब मल्टी-सर्वर टेक्नोलॉजी पर चल रहा है। एक ब्लॉक हुआ तो दूसरा काम करेगा।</p>
     </div>
 
     <main>
@@ -136,7 +136,7 @@
     </main>
 
     <footer>
-        © 2026 Social Video Downloader | Powered by Open Source
+        © 2026 Social Video Downloader | Powered by Multi-Servers
     </footer>
 
     <script>
@@ -157,7 +157,14 @@
             const progBar = document.getElementById('progBar');
             const dlBtn = document.getElementById('dlBtn');
 
-            // UI Reset
+            // 1. लिंक को फिक्स करना (ताकि googleusercontent जैसे लिंक API में फेल न हों)
+            let finalUrl = urlInput;
+            const ytRegex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/)|googleusercontent\.com\/youtube\.com\/)([a-zA-Z0-9_-]{11})/i;
+            const match = urlInput.match(ytRegex);
+            if (match && match[1]) {
+                finalUrl = "https://www.youtube.com/watch?v=" + match[1]; // यह API के लिए परफेक्ट लिंक बना देगा
+            }
+
             resultBox.style.display = 'flex';
             dlBtn.style.display = 'none';
             progContainer.style.display = 'block';
@@ -173,59 +180,72 @@
                 statusText.innerText = `वीडियो प्रोसेस हो रहा है (${progress}%)...`;
             }, 600);
 
-            try {
-                // दुनिया की सबसे पावरफुल ओपन सोर्स मीडिया API (Cobalt) का इस्तेमाल
-                const apiUrl = "https://api.cobalt.tools/api/json"; 
-                
-                const isAudio = formatInput === 'mp3';
-                const quality = isAudio ? '720' : formatInput; // MP3 के लिए क्वालिटी इग्नोर होती है
-                
-                const requestBody = {
-                    url: urlInput,
-                    vQuality: quality,
-                    isAudioOnly: isAudio,
-                    aFormat: "mp3" // अगर ऑडियो है तो mp3 में दे
-                };
+            const isAudio = formatInput === 'mp3';
+            const quality = isAudio ? '720' : formatInput;
+            
+            const requestBody = {
+                url: finalUrl,
+                vQuality: quality,
+                isAudioOnly: isAudio,
+                aFormat: "mp3"
+            };
 
-                const options = {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                };
-                
-                const response = await fetch(apiUrl, options);
-                const data = await response.json();
-                
-                clearInterval(progInterval);
+            // 2. मल्टी-सर्वर बैकअप (Multi-Server Fallback)
+            // अगर एक "Failed to fetch" देता है, तो कोड अपने आप दूसरे सर्वर का इस्तेमाल करेगा।
+            const apis = [
+                "https://co.wuk.sh/api/json",                     // Server 1
+                "https://api.cobalt.tools/api/json",              // Server 2 (Official)
+                "https://cobalt.q0.o.aurora.tech/api/json"        // Server 3
+            ];
 
-                // Cobalt API "error" स्टेटस भेजती है अगर लिंक गलत हो 
-                if (data.status === 'error') {
-                    throw new Error(data.text || "वीडियो नहीं मिला या लिंक प्राइवेट है।");
+            let success = false;
+            let downloadLink = null;
+            let errorMsg = "डाउनलोड लिंक जनरेट नहीं हो पाया।";
+
+            for (let api of apis) {
+                try {
+                    statusText.innerText = `सर्वर चेक किया जा रहा है...`;
+                    const response = await fetch(api, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status !== 'error' && data.url) {
+                            success = true;
+                            downloadLink = data.url;
+                            break; // जैसे ही लिंक मिला, लूप रोक दो
+                        } else if (data.text) {
+                            errorMsg = data.text;
+                        }
+                    }
+                } catch (e) {
+                    console.log(`Failed connecting to ${api}, trying next...`);
+                    // अगले सर्वर पर जायेगा
                 }
+            }
 
-                // Cobalt API सीधे 'url' पैरामीटर में डाउनलोड लिंक देती है
-                if (data.url) {
-                    progBar.style.width = '100%';
-                    statusText.innerText = "✅ वीडियो तैयार है! (100%)";
-                    statusText.style.color = "#10b981";
-                    
-                    setTimeout(() => {
-                        progContainer.style.display = 'none';
-                        dlBtn.href = data.url;
-                        dlBtn.style.display = 'block';
-                    }, 500);
-                } else {
-                    throw new Error("डाउनलोड लिंक जनरेट नहीं हो पाया।");
-                }
+            clearInterval(progInterval);
 
-            } catch (error) {
-                clearInterval(progInterval);
+            // फाइनल आउटपुट
+            if (success && downloadLink) {
+                progBar.style.width = '100%';
+                statusText.innerText = "✅ वीडियो तैयार है! (100%)";
+                statusText.style.color = "#10b981";
+                
+                setTimeout(() => {
+                    progContainer.style.display = 'none';
+                    dlBtn.href = downloadLink;
+                    dlBtn.style.display = 'block';
+                }, 500);
+            } else {
                 progContainer.style.display = 'none';
-                console.error(error);
-                statusText.innerText = "❌ एरर: " + error.message;
+                statusText.innerText = "❌ एरर: " + errorMsg + " (CORS Error)";
                 statusText.style.color = "#ef4444";
             }
         }
