@@ -39,7 +39,7 @@
 
         .result-box { margin-top: 25px; background: #202027; padding: 15px; border-radius: 12px; display: none; align-items: center; gap: 15px; border: 1px solid #2d2d39; flex-direction: column; }
         .info-area { width: 100%; }
-        .status-text { font-size: 13px; color: #a1a1aa; margin-bottom: 8px; font-weight: bold; text-align: center;}
+        .status-text { font-size: 13px; color: #a1a1aa; margin-bottom: 8px; font-weight: bold; text-align: center; word-wrap: break-word;}
         
         .progress-container { width: 100%; background: #333; border-radius: 5px; height: 8px; overflow: hidden; margin-bottom: 10px; display: none; }
         .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #8b5cf6); transition: 0.2s; }
@@ -62,8 +62,8 @@
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <h3>सेटिंग्स</h3>
         <label>API Provider:</label>
-        <input type="text" class="api-display" value="My Private Vercel Server" readonly>
-        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ यह ऐप अब आपके खुद के प्राइवेट Vercel सर्वर पर चल रहा है। कोई एरर नहीं आएगा।</p>
+        <input type="text" class="api-display" value="Dual Server Vercel Backend" readonly>
+        <p style="font-size: 12px; color: #a1a1aa; line-height: 1.5;">✔️ ऐप अब Vercel पर 2 अलग-अलग सर्वर के बैकअप के साथ चल रहा है।</p>
     </div>
 
     <main>
@@ -148,19 +148,10 @@
                 });
 
                 clearInterval(progInterval);
-
-                if (!response.ok) {
-                    throw new Error("आपके सर्वर से सही जवाब नहीं मिला।");
-                }
-
                 const data = await response.json();
 
-                if (data.status === 'error' || data.text) {
-                    throw new Error(data.text || "लिंक प्राइवेट है या सर्वर ओवरलोड है।");
-                }
-
-                // ⚠️ Cobalt की नई API 'url' या 'picker' रिस्पांस देती है
-                if (data.url) {
+                // ⚠️ नया एरर हैंडलिंग जो बताएगा कि असल में क्या गलत हुआ
+                if (data && data.url) {
                     progBar.style.width = '100%';
                     statusText.innerText = "✅ वीडियो तैयार है! (100%)";
                     statusText.style.color = "#10b981";
@@ -170,6 +161,9 @@
                         dlBtn.href = data.url;
                         dlBtn.style.display = 'block';
                     }, 500);
+                } else if (data && data.error) {
+                    let errMsg = data.error.code || data.error.message || "अज्ञात एरर";
+                    throw new Error("API Error: " + errMsg);
                 } else {
                     throw new Error("डाउनलोड लिंक जनरेट नहीं हो पाया।");
                 }
