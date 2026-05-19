@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    // CORS परमिशन
+    // CORS परमिशन (ताकि आपकी वेबसाइट इससे बात कर सके)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,48 +9,59 @@ export default async function handler(req, res) {
     try {
         const { url, vQuality, isAudioOnly } = req.body;
         
-        // नए Cobalt API (v10) का बिल्कुल सही फॉर्मेट
+        // Cobalt का नया डेटा फॉर्मेट
         const reqBody = JSON.stringify({
             url: url,
             videoQuality: vQuality || "720",
-            isAudioOnly: isAudioOnly
+            isAudioOnly: isAudioOnly === true || isAudioOnly === "true"
         });
 
-        // ⚠️ Vercel को एकदम असली ब्राउज़र (Chrome) जैसा दिखाने का कोड
+        // ⚠️ FIX: कोई नाटक नहीं, बिल्कुल सिंपल और असली Headers 
+        // ताकि Cloudflare इसे Bot समझकर ब्लॉक न करे।
         const headers = {
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Origin': 'https://cobalt.tools',
-            'Referer': 'https://cobalt.tools/'
+            'Content-Type': 'application/json'
         };
 
-        // दो अलग-अलग चालू सर्वर का बैकअप
+        // 4 बेहतरीन और चालू सर्वर्स की लिस्ट
         const apis = [
-            "https://api.cobalt.tools/", // पहला (Official)
-            "https://co.wuk.sh/"         // दूसरा (Community Backup)
+            "https://co.wuk.sh/",
+            "https://cobalt.cibere.dev/",
+            "https://api.cobalt.tools/",
+            "https://cobalt.timelessnesses.me/"
         ];
 
-        let lastResponse = null;
+        let lastError = "सभी सर्वर इस समय बिज़ी हैं। कृपया 1 मिनट बाद कोशिश करें।";
 
-        // लूप: अगर पहला फेल हुआ, तो अपने-आप दूसरे सर्वर से डाउनलोड करेगा
+        // लूप: एक सर्वर फेल होगा तो बिना एरर दिए तुरंत दूसरे पर जाएगा
         for (let api of apis) {
             try {
                 const response = await fetch(api, { method: 'POST', headers, body: reqBody });
-                const data = await response.json();
                 
-                // अगर सक्सेस हो गया, तो वेबसाइट को लिंक भेज देगा
-                if (response.ok && data && data.url) {
-                    return res.status(200).json(data);
+                // पहले रिस्पांस को टेक्स्ट में बदलेंगे ताकि Cloudflare के HTML ब्लॉक से क्रैश न हो
+                const textData = await response.text(); 
+                
+                try {
+                    const data = JSON.parse(textData);
+                    
+                    // अगर सफलता मिली और URL मिल गया!
+                    if (response.ok && data && data.url) {
+                        return res.status(200).json(data);
+                    } else if (data && data.error) {
+                        lastError = data.error.message || "API Error";
+                    }
+                } catch(parseErr) {
+                    // अगर JSON की जगह कोई HTML पेज आया (यानी सर्वर ब्लॉक है), तो चुपचाप अगले सर्वर पर जाए
+                    console.log(`${api} returned invalid JSON/HTML.`);
                 }
-                lastResponse = data; // अगर एरर है तो सेव कर लेगा
             } catch(e) {
-                lastResponse = { error: { message: "सर्वर कनेक्शन फेल" } };
+                // अगर नेटवर्क एरर है तो अगले सर्वर पर जाए
+                console.log(`Failed to connect to ${api}`);
             }
         }
 
-        // अगर दोनों सर्वर फेल हो गए, तो असली एरर बताएगा
-        return res.status(400).json(lastResponse);
+        // अगर चारों सर्वर फेल हो गए, तब जाकर असली एरर वेबसाइट को बताएगा
+        return res.status(400).json({ error: { message: lastError } });
 
     } catch (error) {
         return res.status(500).json({ error: { message: error.message } });
